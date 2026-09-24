@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dirección Virtual - Diagrama Interactivo</title>
+    <style>
+        /* --- VARIABLES Y ESTILOS GLOBALES (NEUMORFISMO) --- */
+        :root {
+            --bg-color: #e0e5ec;
+            --text-color: #333;
+            --shadow-light: #ffffff;
+            --shadow-dark: #a3b1c6;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #bababa;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #cont {
+            background-color: #bababa;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 15px;
+            box-sizing: border-box;
+        }
+
+        /* --- ENCABEZADO CON BOTÓN DESTACADO --- */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 90%;
+            margin-bottom: 10px;
+            padding: 0 10px;
+        }
+
+        h1 {
+            color: #333;
+            text-shadow: 1px 1px 2px white;
+            margin: 0;
+            font-size: 26px;
+        }
+
+        /* Botón que resalta - Regresar a Von Neumann */
+        .btn-von-neumann {
+            background: linear-gradient(135deg, #002672); /* Color llamativo */
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+           
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-von-neumann:hover {
+            transform: translateY(-2px);
+           
+        }
+
+        .btn-von-neumann:active {
+            transform: translateY(1px);
+           
+        }
+
+        /* Contenedor principal del diagrama */
+        #cont2 {
+            position: relative;
+            width: 95%;
+            height: 80%;
+            background-color: var(--bg-color);
+            border-radius: 20px;
+          
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* --- ÁREA DEL DIAGRAMA COMPLETO (MÁS GRANDE) --- */
+        .diagrama-completo {
+            flex-grow: 1;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 30px; /* Más espacio entre tablas */
+            padding: 15px;
+            overflow: auto;
+        }
+
+        .seccion-diagrama {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .table-title {
+            font-weight: bold;
+            font-size: 14px; /* Título más grande */
+            margin-bottom: 6px;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+         
+        }
+
+        table {
+            border-collapse: collapse;
+            font-size: 14px; /* Texto de tabla más grande */
+            background: var(--bg-color);
+            
+            border-radius: 6px;
+        }
+
+        th, td {
+            border: 1px solid #aaa;
+            padding: 8px 12px; /* Celdas más grandes */
+            text-align: center;
+            color: #333;
+        }
+
+        th {
+            background-color: #d1d9e6;
+            font-weight: bold;
+        }
+
+        /* Colores específicos de la imagen */
+        .header-green { background-color: #8fd19e !important; }
+        .bg-yellow { background-color: #fce8a5; }
+        .bg-purple { background-color: #c4c4f8; }
+        .bg-blue { background-color: #a5d8fc; }
+        .bg-orange { background-color: #fcd29e; }
+        .bg-dark-orange { background-color: #fca55e; }
+        .bg-brown { background-color: #8b4513; color: white; }
+        .bg-pink { background-color: #fcb6b6; }
+
+        /* Conexiones visuales (flechas) */
+        .conector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #777;
+            font-size: 28px; /* Flechas más grandes */
+            font-weight: bold;
+            margin: 0 10px;
+            
+        }
+
+        /* --- BARRA DE BOTONES INFERIOR --- */
+        .menu-inferior {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 15px 0 5px 0;
+            border-top: 2px solid #c0c0c0;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .neumorphic-btn {
+            background: var(--bg-color);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: #555;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+            transition: all 0.2s ease-in-out;
+            outline: none;
+        }
+
+        .neumorphic-btn:active, .neumorphic-btn.active {
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            color: #000;
+            transform: scale(0.97);
+        }
+
+        /* --- TARJETA DE INFORMACIÓN EMERGENTE --- */
+        .info-card {
+            position: absolute;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            width: 80%;
+            max-width: 700px;
+            background: var(--bg-color);
+            border-radius: 15px;
+            padding: 20px 25px;
+            box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 100;
+            border-left: 6px solid #0072ff; /* Borde destacado */
+        }
+
+        .info-card.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .info-card h3 {
+            margin: 0 0 10px 0;
+            color: #222;
+            font-size: 18px;
+        }
+
+        .info-card p {
+            margin: 0;
+            color: #555;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .info-card .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #888;
+            font-weight: bold;
+        }
+
+        .info-card .close-btn:hover {
+            color: #333;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="cont">
+        <!-- Encabezado con título y botón resaltado -->
+        <div class="header-container">
+            <h1>Dirección Virtual - Diagrama Completo</h1>
+           <button class="btn-von-neumann" onclick="window.location.href='index.html'">Regresar al Modelo Von Neumann</button>
+        </div>
+        
+        <div id="cont2">
+            <!-- DIAGRAMA COMPLETO VISIBLE -->
+            <div class="diagrama-completo">
+                
+                <!-- 1. Dirección Virtual -->
+                <div class="seccion-diagrama">
+                    <div class="table-title">Dirección Virtual</div>
+                    <table>
+                        <tr><th>Dir 1</th><th>Dir 2</th><th>BYTE</th></tr>
+                        <tr><td>10</td><td>00101</td><td>3AFF</td></tr>
+                    </table>
+                </div>
+
+                <div class="conector">→</div>
+
+                <!-- 2. puerto a paginas juas juas gabo hueco  -->
+               <div class="seccion-diagrama">
+                    <div class="table-title">Orden</div>
+                    <table>
+                        <tr><th>Orden</th><th>1er Nivel</th><th>2do Nivel</th></tr>
+                        <tr><td>1</td><td>1010</td><td>00110</td></tr>
+                        <tr><td>2</td><td>1</td><td>00101</td></tr>
+                        <tr class="bg-pink"><td>3</td><td>10</td><td>00101</td></tr>
+                        <tr><td>4</td><td>1001</td><td>00101</td></tr>
+                        <tr><td>5</td><td>1000</td><td>01101</td></tr>
+                        <tr><td>6</td><td>11</td><td>01110</td></tr>
+                    </table>
+                </div>
+
+                <div class="conector">→</div>
+
+                <!-- 3. Orden y Sub Tabla 1 -->
+               
+
+                  <div class="seccion-diagrama">
+                    <div class="table-title">Puntero a Pagina</div>
+                    <table>
+                        <tr><th colspan="2" class="header-green">Puntero a pagina </th></tr>
+                        <tr><td>0</td><td class="bg-yellow">2B10</td></tr>
+                        <tr><td>1</td><td class="bg-purple">3B20</td></tr>
+                        <tr class="bg-pink"><td>2</td><td class="bg-blue">1C25</td></tr>
+                        <tr><td>3</td><td class="bg-orange">4A24</td></tr>
+                        <tr><td>4</td><td class="bg-dark-orange">3B25</td></tr>
+                        <tr><td>5</td><td class="bg-brown">FF02</td></tr>
+                    </table>
+                </div>
+
+                <div class="conector">→</div>
+
+                <!-- 4. Sub Tabla 1 -->
+                <div class="seccion-diagrama">
+                    <div class="table-title">Sub Tabla 1</div>
+                    <table>
+                        <tr><th>#</th><th>Estado</th><th>Marco</th></tr>
+                        <tr><td>0</td><td>0</td><td>FF001</td></tr>
+                        <tr><td>1</td><td>1</td><td>AB231</td></tr>
+                        <tr><td>2</td><td>1</td><td>BB798</td></tr>
+                        <tr><td>3</td><td>Ø</td><td>AB555</td></tr>
+                        <tr><td>4</td><td>Ø</td><td>AA010</td></tr>
+                        <tr class="bg-pink"><td>5</td><td>1</td><td>BD777</td></tr>
+                    </table>
+                    <div style="font-size:12px; margin-top:5px; color:#555; font-weight:bold;">Sub Tabla de Páginas</div>
+                    <table style="margin-top:8px;">
+                        <tr><td class="bg-blue">1C25</td></tr>
+                    </table>
+                </div>
+
+             
+
+                <!-- 5. Sub Tabla 2 -->
+                <div class="seccion-diagrama">
+                    <div class="table-title">Sub Tabla 2</div>
+                    <table>
+                        <tr><th>#</th><th>Estado</th><th>Marco</th></tr>
+                        <tr><td>0</td><td>0</td><td>FF001</td></tr>
+                        <tr><td>1</td><td>1</td><td>AB231</td></tr>
+                        <tr><td>2</td><td>1</td><td>BB798</td></tr>
+                        <tr><td>3</td><td>Ø</td><td>AB555</td></tr>
+                        <tr><td>4</td><td>Ø</td><td>AA010</td></tr>
+                        <tr><td>5</td><td>Ø</td><td>BD777</td></tr>
+                    </table>
+                    <div style="font-size:12px; margin-top:5px; color:#555; font-weight:bold;">Sub Tabla de Páginas</div>
+                    <table style="margin-top:8px;">
+                        <tr><td class="bg-yellow">2B10</td></tr>
+                    </table>
+                </div>
+
+                <div class="conector">→</div>
+
+                <!-- 6. Resultado Final -->
+                <div class="seccion-diagrama">
+                    <div class="table-title">Resultado Final</div>
+                    <table>
+                        <tr><th>Marco</th><th>Byte</th></tr>
+                        <tr><td class="bg-pink">BD777</td><td>3AFF</td></tr>
+                    </table>
+                </div>
+
+            </div>
+
+            <!-- TARJETA DE INFORMACIÓN (OCULTA POR DEFECTO) -->
+            <div id="infoCard" class="info-card">
+                <button class="close-btn" onclick="cerrarInfo()">×</button>
+                <h3 id="infoTitle">Título</h3>
+                <p id="infoText">Descripción...</p>
+            </div>
+
+            <!-- BOTONES INFERIORES -->
+            <div class="menu-inferior">
+                <button class="neumorphic-btn" onclick="mostrarInfo('dirVirtual')">Dirección Virtual</button>
+                <button class="neumorphic-btn" onclick="mostrarInfo('orden')">Orden de Niveles</button>
+                <button class="neumorphic-btn" onclick="mostrarInfo('tablaPaginas')">puerto a paginas</button>
+                <button class="neumorphic-btn" onclick="mostrarInfo('subTabla1')">Sub Tabla 1</button>
+                <button class="neumorphic-btn" onclick="mostrarInfo('subTabla2')">Sub Tabla 2</button>
+                <button class="neumorphic-btn" onclick="mostrarInfo('resultado')">Resultado Final</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Objeto con la información de cada sección
+        const informacion = {
+            dirVirtual: {
+                titulo: "Dirección Virtual",
+                texto: "Es la dirección lógica generada por la UC cuando un proceso necesita acceder a la memoria. La dirección virtual se divide en varios campos que permiten localizar la información dentro del sistema de paginación. En este ejemplo, Dir 1 (10) identifica la entrada de la tabla de páginas de primer nivel, Dir 2 (00101) identifica la entrada de la tabla de segundo nivel y BYTE (3AFF) representa el desplazamiento dentro de la página seleccionada. "
+            },
+              tablaPaginas: {
+                titulo: "Orden de Niveles",
+                texto: "  La tabla de páginas es una estructura de datos utilizada por el sistema operativo para relacionar las páginas virtuales con las direcciones físicas. Cada entrada contiene la ubicación de una subtabla o de un marco de memoria. En este ejemplo, el índice seleccionado apunta a la entrada 1C25, la cual indica la subtabla que deberá consultarse en el siguiente paso del proceso de traducción "
+            },
+            orden: {
+                titulo: "Puerto a paginas ",
+                texto: "El sistema utiliza paginación multinivel para traducir una dirección virtual en una dirección física. Primero se consulta el primer nivel usando el valor de Dir 1. El resultado obtenido permite localizar una tabla de segundo nivel. Posteriormente, el valor de Dir 2 se utiliza para seleccionar la entrada correspondiente en dicha tabla. Este mecanismo reduce el uso de memoria y mejora la organización de las direcciones"
+            },
+          
+            subTabla1: {
+                titulo: "Sub Tabla 1",
+                texto: "La Sub Tabla 1 corresponde al segundo nivel de traducción de direcciones. Utilizando el índice obtenido prev amente, el sistema localiza la entrada adecuada dentro de esta tabla. Cada fila contiene un estado de validez y un número de marco asociado. En este caso, la búsqueda conduce al marco BD777, que contiene la ubicación física donde se encuentra almacenada la información solicitada por el proceso"
+            },
+            subTabla2: {
+                titulo: "Sub Tabla 2",
+                texto: "La Sub Tabla 2 representa una etapa adicional de validación y localización utilizada durante la traducción de memoria. Aquí se verifica que la página se encuentre activa y disponible. Las entradas marcadas con estado válido pueden utilizarse para acceder a memoria física, mientras que las entradas inválidas requerirían una acción del sistema operativo, como una carga desde disco. En este ejemplo se mantiene la referencia al marco BD777."
+            },
+            resultado: {
+                titulo: "Resultado Final",
+                texto: "Después de recorrer todos los niveles de traducción, el sistema obtiene la dirección físicadefinitiva. Esta dirección está compuesta por el Marco (BD777) y el Byte de desplazamiento (3AFF). La combinación de ambos valores permite acceder exactamente a la posición de memoria donde se encuentra el dato solicitado por el proceso, completando así la traducción desde dirección virtual hacia dirección física."
+            }
+        };
+
+        // Función para mostrar la información en la tarjeta
+        function mostrarInfo(clave) {
+            const card = document.getElementById('infoCard');
+            const title = document.getElementById('infoTitle');
+            const text = document.getElementById('infoText');
+
+            if (informacion[clave]) {
+                title.textContent = informacion[clave].titulo;
+                text.textContent = informacion[clave].texto;
+                card.classList.add('visible');
+            }
+        }
+
+        // Función para cerrar la tarjeta
+        function cerrarInfo() {
+            const card = document.getElementById('infoCard');
+            card.classList.remove('visible');
+        }
+
+        // Cerrar la tarjeta si se hace clic fuera de ella
+        document.addEventListener('click', function(event) {
+            const card = document.getElementById('infoCard');
+            const botones = document.querySelectorAll('.neumorphic-btn');
+            
+            let clickEnBoton = false;
+            botones.forEach(btn => {
+                if (btn.contains(event.target)) clickEnBoton = true;
+            });
+
+            if (!card.contains(event.target) && !clickEnBoton) {
+                cerrarInfo();
+            }
+        });
+    </script>
+</body>
+</html>

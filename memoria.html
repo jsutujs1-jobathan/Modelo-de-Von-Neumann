@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama de Estados - Dirección Virtual</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #cont {
+            width: 100vw;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        #cont2 {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            background-color: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        /* Botón Regreso al Index */
+        .btn-index {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: #ffffff;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12.5px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 30;
+        }
+
+        .btn-index:hover {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            border-color: #38bdf8;
+            transform: translateY(-1px);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+        }
+
+        /* Botón SVG Round Robin inclinado */
+        .btn-round-robin {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-round-robin rect {
+            fill: #0284c7;
+            stroke: #0369a1;
+            stroke-width: 1.5px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-round-robin:hover rect {
+            fill: #0369a1;
+            filter: drop-shadow(0 0 6px rgba(2, 132, 199, 0.6));
+        }
+
+        .btn-round-robin text {
+            fill: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+
+        /* SVG Styles */
+        svg {
+            width: 100%;
+            height: auto;
+            max-height: 520px;
+            font-family: inherit;
+        }
+
+        .nodo {
+            fill: #ffffff;
+            stroke: #38bdf8;
+            stroke-width: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nodo:hover, .nodo.active {
+            fill: #e0f2fe;
+            stroke: #0284c7;
+            filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.4));
+        }
+
+        /* Elemento Bolsa interactivo */
+        .bolsa-group {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .bolsa-group:hover path.bolsa-body, .bolsa-group.active path.bolsa-body {
+            fill: #86efac;
+            stroke: #22c55e;
+            filter: drop-shadow(0 0 12px rgba(74, 222, 128, 0.5));
+        }
+
+        .linea {
+            stroke: #94a3b8;
+            stroke-width: 2.5px;
+            transition: all 0.3s ease;
+        }
+
+        .linea.highlight-largo {
+            stroke: #22c55e !important;
+            stroke-width: 3.5px !important;
+            filter: drop-shadow(0 0 5px rgba(34, 197, 94, 0.6));
+        }
+
+        .linea.highlight-corto {
+            stroke: #ef4444 !important;
+            stroke-width: 3.5px !important;
+            filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.6));
+        }
+
+        .linea.highlight-mediano {
+            stroke: #eab308 !important;
+            stroke-width: 3.5px !important;
+            filter: drop-shadow(0 0 5px rgba(234, 179, 8, 0.6));
+        }
+
+        .texto-nodo {
+            font-size: 15px;
+            font-weight: 800;
+            fill: #1e293b;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+        }
+
+        .texto-etiqueta {
+            font-size: 11px;
+            fill: #64748b;
+            text-anchor: middle;
+            font-weight: 600;
+        }
+
+        /* Indicadores de zonas de Planificación */
+        .zona-plan {
+            stroke-dasharray: 6, 6;
+            stroke-width: 2px;
+            fill-opacity: 0.08;
+            transition: all 0.3s ease;
+        }
+
+        .zona-largo {
+            stroke: #22c55e;
+            fill: #22c55e;
+        }
+
+        .zona-corto {
+            stroke: #ef4444;
+            fill: #ef4444;
+        }
+
+        .zona-mediano {
+            stroke: #eab308;
+            fill: #eab308;
+        }
+
+        .zona-largo.active {
+            stroke-width: 3px;
+            fill-opacity: 0.2;
+            filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.2));
+        }
+
+        .zona-corto.active {
+            stroke-width: 3px;
+            fill-opacity: 0.2;
+            filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.2));
+        }
+
+        .zona-mediano.active {
+            stroke-width: 3px;
+            fill-opacity: 0.2;
+            filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.2));
+        }
+
+        /* Panel de Botones Inferior */
+        .panel-estados {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn-estado {
+            background-color: #f1f5f9;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-estado:hover {
+            background-color: #e2e8f0;
+            border-color: #38bdf8;
+            transform: translateY(-1px);
+        }
+
+        .btn-estado.active {
+            background-color: #e0f2fe;
+            border-color: #38bdf8;
+            color: #0284c7;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+        .btn-plan {
+            font-weight: 700;
+        }
+
+        .btn-plan-largo {
+            background-color: #dcfce7;
+            border-color: #86efac;
+            color: #166534;
+        }
+
+        .btn-plan-largo:hover, .btn-plan-largo.active {
+            background-color: #bbf7d0;
+            color: #14532d;
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-plan-corto {
+            background-color: #fee2e2;
+            border-color: #fca5a5;
+            color: #991b1b;
+        }
+
+        .btn-plan-corto:hover, .btn-plan-corto.active {
+            background-color: #fecaca;
+            color: #7f1d1d;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-plan-mediano {
+            background-color: #fef9c3;
+            border-color: #fde047;
+            color: #854d0e;
+        }
+
+        .btn-plan-mediano:hover, .btn-plan-mediano.active {
+            background-color: #fef08a;
+            color: #713f12;
+            box-shadow: 0 0 12px rgba(234, 179, 8, 0.3);
+        }
+
+        /* Tarjeta de Información */
+        .info-card {
+            display: none;
+            position: absolute;
+            bottom: 110px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 650px;
+            background-color: #ffffff;
+            border: 2px solid #38bdf8;
+            border-radius: 8px;
+            padding: 16px;
+            color: #1e293b;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 20;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, 10px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        .info-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            color: #0284c7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .info-card p {
+            margin: 4px 0;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #475569;
+        }
+
+        .close-btn {
+            cursor: pointer;
+            color: #94a3b8;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .close-btn:hover {
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cont">
+        <h1 class="text-2xl font-bold text-slate-800 mb-2 tracking-wide">Diagrama de Estados del Proceso y Planificación</h1>
+        
+        <div id="cont2">
+
+            <!-- BOTÓN REGRESO AL INDEX -->
+            <a href="index.html" class="btn-index">
+                ↩ Regreso al modelo
+            </a>
+
+            <!-- Título superior -->
+            <div class="text-xs font-semibold text-slate-400 tracking-widest uppercase my-1">DIAGRAMA GENERAL DE PLANIFICACIÓN DE PROCESOS</div>
+
+            <!-- DIAGRAMA SVG -->
+            <svg viewBox="0 0 1000 480" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8" />
+                    </marker>
+                    <marker id="arrow-largo" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L0,6 L8,3 z" fill="#22c55e" />
+                    </marker>
+                    <marker id="arrow-corto" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L0,6 L8,3 z" fill="#ef4444" />
+                    </marker>
+                    <marker id="arrow-mediano" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+                        <path d="M0,0 L0,6 L8,3 z" fill="#eab308" />
+                    </marker>
+                </defs>
+
+                <!-- Marco punteado -->
+                <rect x="330" y="30" width="460" height="420" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="6,6" rx="8"/>
+                <text x="560" y="22" class="texto-etiqueta" fill="#94a3b8" font-size="10">IMAGEN DE MEMORIA</text>
+
+                <!-- ZONA PLANIFICACIÓN LARGO PLAZO -->
+                <rect id="zona-largo" x="20" y="30" width="280" height="420" class="zona-plan zona-largo" rx="8"/>
+
+                <!-- BOLSA -->
+                <g id="bolsa-element" class="bolsa-group" onclick="toggleCard('card-bolsa')">
+                    <path class="bolsa-body" d="M 120,200 C 70,220 60,330 90,360 C 120,385 180,385 210,360 C 240,330 230,220 180,200 C 190,170 185,150 180,140 C 160,145 140,145 120,140 C 115,150 110,170 120,200 Z" 
+                          fill="#bbf7d0" stroke="#22c55e" stroke-width="3" />
+                    <path d="M 115,185 Q 150,195 185,185" fill="none" stroke="#eab308" stroke-width="5" />
+                    <path d="M 150,187 L 140,210 M 150,187 L 160,212" stroke="#eab308" stroke-width="4" stroke-linecap="round" />
+
+                    <circle cx="120" cy="270" r="14" fill="#7dd3fc" stroke="#0284c7" stroke-width="2" />
+                    <circle cx="155" cy="250" r="14" fill="#7dd3fc" stroke="#0284c7" stroke-width="2" />
+                    <circle cx="185" cy="280" r="14" fill="#7dd3fc" stroke="#0284c7" stroke-width="2" />
+                    <circle cx="135" cy="320" r="14" fill="#7dd3fc" stroke="#0284c7" stroke-width="2" />
+                    <circle cx="170" cy="325" r="14" fill="#7dd3fc" stroke="#0284c7" stroke-width="2" />
+                    <circle cx="150" cy="285" r="14" fill="#7dd3fc" stroke="#0284c7" stroke-width="2" />
+
+                    <text x="150" y="410" class="texto-etiqueta" fill="#166534" font-size="12" font-weight="bold">PROCESOS POR LOTES</text>
+                    <text x="150" y="428" class="texto-etiqueta" fill="#166534" font-size="12" font-weight="bold">EN ESPERA (COLA)</text>
+                </g>
+
+                <!-- ZONAS DERECHA -->
+                <rect id="zona-corto" x="810" y="40" width="170" height="190" class="zona-plan zona-corto" rx="6"/>
+                <text x="895" y="125" class="texto-etiqueta" fill="#b91c1c" font-weight="bold">PLANIFICACIÓN A</text>
+                <text x="895" y="140" class="texto-etiqueta" fill="#b91c1c" font-weight="bold">CORTO PLAZO</text>
+
+                <rect id="zona-mediano" x="810" y="240" width="170" height="200" class="zona-plan zona-mediano" rx="6"/>
+                <text x="895" y="330" class="texto-etiqueta" fill="#854d0e" font-weight="bold">PLANIFICACIÓN A</text>
+                <text x="895" y="345" class="texto-etiqueta" fill="#854d0e" font-weight="bold">MEDIANO PLAZO</text>
+
+                <!-- CONEXIONES -->
+                <line x1="225" y1="270" x2="280" y2="270" id="link-bolsa-bif" class="linea group-largo" stroke-dasharray="4,4" />
+                <text x="252" y="255" class="texto-etiqueta" fill="#166534" font-size="10">ENTRA AL</text>
+                <text x="252" y="267" class="texto-etiqueta" fill="#166534" font-size="10">SISTEMA</text>
+
+                <line x1="280" y1="270" x2="415" y2="245" id="link-largo-L" class="linea group-largo" marker-end="url(#arrow)" />
+                <line x1="280" y1="270" x2="415" y2="395" id="link-largo-LS" class="linea group-largo" marker-end="url(#arrow)" />
+
+                <line x1="450" y1="220" x2="545" y2="90" id="link-L-E" class="linea group-corto" marker-end="url(#arrow)" />
+
+                <!-- BOTÓN INCLINADO PARALELO A LA LÍNEA Y AL TEXTO DESPACHO -->
+                <a href="round_robin.html">
+                    <g class="btn-round-robin" transform="rotate(-52 485 145)">
+                        <rect x="430" y="105" width="110" height="22" rx="11" />
+                        <text x="485" y="116">Round Robin ➔</text>
+                    </g>
+                </a>
+
+                <text x="485" y="145" class="texto-etiqueta" transform="rotate(-52 485 145)">DESPACHO</text>
+
+                <line x1="565" y1="105" x2="470" y2="235" id="link-E-L" class="linea group-corto" marker-end="url(#arrow)" />
+                <text x="530" y="180" class="texto-etiqueta" transform="rotate(-52 530 180)">PLAN / TIMEOUT</text>
+
+                <line x1="575" y1="100" x2="680" y2="220" id="link-E-B" class="linea group-corto" marker-end="url(#arrow)" />
+                <text x="640" y="150" class="texto-etiqueta" transform="rotate(48 640 150)">E/S O BLOQUEO</text>
+
+                <line x1="670" y1="240" x2="485" y2="240" id="link-B-L" class="linea group-corto" marker-end="url(#arrow)" />
+                <text x="575" y="230" class="texto-etiqueta">FIN E/S</text>
+
+                <line x1="450" y1="265" x2="450" y2="375" id="link-L-LS" class="linea group-mediano" marker-end="url(#arrow)" />
+                <text x="388" y="320" class="texto-etiqueta" transform="rotate(-90 388 320)">EXPULSADO X DISCO</text>
+
+                <line x1="470" y1="375" x2="470" y2="265" id="link-LS-L" class="linea group-mediano" marker-end="url(#arrow)" />
+                <text x="488" y="320" class="texto-etiqueta" transform="rotate(-90 488 320)">RECUPERADO DISCO</text>
+
+                <line x1="690" y1="265" x2="690" y2="375" id="link-B-BS" class="linea group-mediano" marker-end="url(#arrow)" />
+                <text x="710" y="320" class="texto-etiqueta" transform="rotate(90 710 320)">EXPULSADO A DISCO</text>
+
+                <line x1="665" y1="400" x2="485" y2="400" id="link-BS-LS" class="linea group-mediano" marker-end="url(#arrow)" />
+                <text x="575" y="390" class="texto-etiqueta">FIN E/S</text>
+
+                <!-- NODOS -->
+                <circle id="nodo-E" cx="560" cy="85" r="24" class="nodo" onclick="toggleCard('card-E')" />
+                <text x="560" y="85" class="texto-nodo">E</text>
+
+                <circle id="nodo-L" cx="460" cy="240" r="24" class="nodo" onclick="toggleCard('card-L')" />
+                <text x="460" y="240" class="texto-nodo">L</text>
+
+                <circle id="nodo-B" cx="690" cy="240" r="24" class="nodo" onclick="toggleCard('card-B')" />
+                <text x="690" y="240" class="texto-nodo">B</text>
+
+                <circle id="nodo-LS" cx="460" cy="400" r="24" class="nodo" onclick="toggleCard('card-LS')" />
+                <text x="460" y="400" class="texto-nodo">LS</text>
+
+                <circle id="nodo-BS" cx="690" cy="400" r="24" class="nodo" onclick="toggleCard('card-BS')" />
+                <text x="690" y="400" class="texto-nodo">BS</text>
+
+                <text x="460" y="440" class="texto-etiqueta" fill="#0284c7">LISTO SUSPENDIDO</text>
+                <text x="690" y="440" class="texto-etiqueta" fill="#0284c7">BLOQUEADO SUSPENDIDO</text>
+            </svg>
+
+            <!-- TARJETAS DE INFORMACIÓN -->
+
+            <div id="card-bolsa" class="info-card" style="border-color: #22c55e;">
+                <h3 style="color: #166534;"><span>Procesos en Espera (Cola de Lotes)</span><span class="close-btn" onclick="closeAllCards()">&times;</span></h3>
+                <p>Representa el almacén o bolsa de trabajos/procesos secundarios creados o enviados por los usuarios que están esperando ser admitidos por el sistema operativo.</p>
+                <p>Permanecen en almacenamiento masivo (disco) en forma de lotes hasta que el <strong>Planificador a Largo Plazo</strong> decida admitirlos a memoria.</p>
+            </div>
+
+            <div id="card-E" class="info-card">
+                <h3><span>Estado E: Ejecución</span><span class="close-btn" onclick="closeAllCards()">&times;</span></h3>
+                <p>En este estado el proceso está usando el procesador para realizar sus instrucciones. Es el <strong>único estado donde realmente se está trabajando sobre los datos</strong>.</p>
+                <p>Si necesita realizar una operación de entrada o salida, puede pasar a <em>Bloqueado</em>. También puede volver a <em>Listo</em> si el sistema asigna el procesador a otro proceso.</p>
+            </div>
+
+            <div id="card-L" class="info-card">
+                <h3><span>Estado L: Listo (Ready)</span><span class="close-btn" onclick="closeAllCards()">&times;</span></h3>
+                <p>Aquí se encuentran los procesos que ya tienen todo lo necesario para ejecutarse, pero todavía están esperando que el procesador quede disponible.</p>
+                <p>Permanecen en una cola hasta que el planificador los selecciona. Es un <strong>estado de espera normal</strong> dentro del sistema operativo.</p>
+            </div>
+
+            <div id="card-B" class="info-card">
+                <h3><span>Estado B: Bloqueado (Blocked)</span><span class="close-btn" onclick="closeAllCards()">&times;</span></h3>
+                <p>Un proceso entra en este estado cuando necesita esperar algún recurso o una operación de entrada/salida.</p>
+                <p>Mientras esté bloqueado <strong>no puede seguir ejecutándose</strong>. Cuando la operación termina, el proceso regresa al estado de <em>Listo</em> para esperar nuevamente el procesador.</p>
+            </div>
+
+            <div id="card-LS" class="info-card">
+                <h3><span>Estado LS: Listo Suspendido</span><span class="close-btn" onclick="closeAllCards()">&times;</span></h3>
+                <p>Corresponde a procesos que estaban listos para ejecutarse, pero fueron <strong>movidos temporalmente al disco</strong> para liberar espacio en memoria principal.</p>
+                <p>Aunque están preparados para continuar, primero deben regresar a la memoria RAM antes de poder competir por el procesador.</p>
+            </div>
+
+            <div id="card-BS" class="info-card">
+                <h3><span>Estado BS: Bloqueado Suspendido</span><span class="close-btn" onclick="closeAllCards()">&times;</span></h3>
+                <p>Este estado combina dos situaciones: el proceso está <strong>esperando un evento o recurso</strong> y además fue <strong>retirado de la memoria principal</strong>.</p>
+                <p>Cuando el evento finaliza y el proceso vuelve a la memoria, puede pasar al estado de <em>Listo Suspendido</em> o <em>Listo</em> según corresponda.</p>
+            </div>
+
+            <div id="card-largo" class="info-card" style="border-color: #22c55e;">
+                <h3 style="color: #166534;"><span>Planificación a Largo Plazo (Long-Term Scheduler / Admit)</span><span class="close-btn" onclick="closeAllCards()">&times;</span></h3>
+                <p><strong>Función:</strong> Determina cuáles trabajos/procesos de la bolsa en espera son admitidos en el sistema para ser procesados.</p>
+                <p><strong>Control del Grado de Multiprogramación:</strong> Decide la cantidad total de procesos que se ejecutarán concurrentemente. Admite nuevos procesos dirigiéndolos a <strong>Listo (L)</strong> (en RAM) o a <strong>Listo Suspendido (LS)</strong> (en disco si la memoria está llena).</p>
+            </div>
+
+            <div id="card-corto" class="info-card" style="border-color: #ef4444;">
+                <h3 style="color: #b91c1c;"><span>Planificación a Corto Plazo (Short-Term Scheduler)</span><span class="close-btn" onclick="closeAllCards()">&times;</span></h3>
+                <p>Es la encargada de <strong>decidir qué proceso utilizará el procesador</strong> en cada momento. Realiza selecciones constantemente para garantizar que los procesos avancen de manera ordenada.</p>
+                <p>Su objetivo es <strong>aprovechar el CPU de forma eficiente</strong> y mantener una buena respuesta del sistema.</p>
+            </div>
+
+            <div id="card-mediano" class="info-card" style="border-color: #eab308;">
+                <h3 style="color: #854d0e;"><span>Planificación a Mediano Plazo (Medium-Term Scheduler)</span><span class="close-btn" onclick="closeAllCards()">&times;</span></h3>
+                <p>Se ocupa de <strong>gestionar la memoria del sistema</strong>. Cuando hay muchos procesos activos, puede mover algunos temporalmente al disco y traerlos de vuelta cuando sea necesario.</p>
+                <p>Esto ayuda a <strong>evitar la saturación de la memoria RAM</strong> y mejora el rendimiento general del equipo.</p>
+            </div>
+
+            <!-- PANEL DE BOTONES -->
+            <div class="panel-estados">
+                <button class="btn-estado" onclick="toggleCard('card-bolsa')">PROCESOS EN ESPERA</button>
+                <button class="btn-estado" onclick="toggleCard('card-E')">E - EJECUCIÓN</button>
+                <button class="btn-estado" onclick="toggleCard('card-L')">L - LISTO</button>
+                <button class="btn-estado" onclick="toggleCard('card-B')">B - BLOQUEADO</button>
+                <button class="btn-estado" onclick="toggleCard('card-LS')">LS - LISTO SUSPENDIDO</button>
+                <button class="btn-estado" onclick="toggleCard('card-BS')">BS - BLOQUEADO SUSPENDIDO</button>
+                
+                <button class="btn-estado btn-plan btn-plan-largo" onclick="toggleCard('card-largo')"> Planificación a Largo Plazo</button>
+                <button class="btn-estado btn-plan btn-plan-corto" onclick="toggleCard('card-corto')"> Planificación a Corto Plazo</button>
+                <button class="btn-estado btn-plan btn-plan-mediano" onclick="toggleCard('card-mediano')"> Planificación a Mediano Plazo</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function closeAllCards() {
+            const allCards = document.querySelectorAll('.info-card');
+            allCards.forEach(c => c.style.display = 'none');
+
+            const allBtns = document.querySelectorAll('.btn-estado');
+            allBtns.forEach(b => b.classList.remove('active'));
+
+            const allNodos = document.querySelectorAll('.nodo');
+            allNodos.forEach(n => n.classList.remove('active'));
+
+            const bolsa = document.getElementById('bolsa-element');
+            if (bolsa) bolsa.classList.remove('active');
+
+            const allLines = document.querySelectorAll('.linea');
+            allLines.forEach(l => {
+                l.classList.remove('highlight-largo', 'highlight-corto', 'highlight-mediano');
+                l.setAttribute('marker-end', 'url(#arrow)');
+            });
+
+            document.getElementById('zona-largo').classList.remove('active');
+            document.getElementById('zona-corto').classList.remove('active');
+            document.getElementById('zona-mediano').classList.remove('active');
+        }
+
+        function toggleCard(id) {
+            const card = document.getElementById(id);
+            const isVisible = card.style.display === 'block';
+
+            closeAllCards();
+
+            if (!isVisible) {
+                card.style.display = 'block';
+
+                const btn = document.querySelector(`.btn-estado[onclick="toggleCard('${id}')"]`);
+                if (btn) btn.classList.add('active');
+
+                if (id === 'card-largo') {
+                    document.getElementById('zona-largo').classList.add('active');
+                    document.getElementById('bolsa-element').classList.add('active');
+                    const group = document.querySelectorAll('.group-largo');
+                    group.forEach(l => {
+                        l.classList.add('highlight-largo');
+                        l.setAttribute('marker-end', 'url(#arrow-largo)');
+                    });
+                    document.getElementById('nodo-L').classList.add('active');
+                    document.getElementById('nodo-LS').classList.add('active');
+                }
+                else if (id === 'card-corto') {
+                    document.getElementById('zona-corto').classList.add('active');
+                    const group = document.querySelectorAll('.group-corto');
+                    group.forEach(l => {
+                        l.classList.add('highlight-corto');
+                        l.setAttribute('marker-end', 'url(#arrow-corto)');
+                    });
+                    document.getElementById('nodo-E').classList.add('active');
+                    document.getElementById('nodo-L').classList.add('active');
+                    document.getElementById('nodo-B').classList.add('active');
+                } 
+                else if (id === 'card-mediano') {
+                    document.getElementById('zona-mediano').classList.add('active');
+                    const group = document.querySelectorAll('.group-mediano');
+                    group.forEach(l => {
+                        l.classList.add('highlight-mediano');
+                        l.setAttribute('marker-end', 'url(#arrow-mediano)');
+                    });
+                    document.getElementById('nodo-LS').classList.add('active');
+                    document.getElementById('nodo-BS').classList.add('active');
+                }
+                else if (id === 'card-bolsa') {
+                    document.getElementById('bolsa-element').classList.add('active');
+                }
+                else {
+                    const nodoId = id.replace('card-', 'nodo-');
+                    const nodo = document.getElementById(nodoId);
+                    if (nodo) nodo.classList.add('active');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

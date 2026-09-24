@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<!-- Declaración del tipo de documento: HTML5 -->
+
+<html lang="es">
+<!-- Elemento raíz del documento, idioma español -->
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Diagrama interactivo del modelo de Von Neumann">
+  <title>Modelo de Von Neumann</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Estilos para los botones de navegación -->
+  <style>
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background-color: #1f6feb;
+      color: #ffffff;
+      border: 1px solid #3b82f6;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      white-space: nowrap;
+    }
+
+    .nav-btn:hover {
+      background-color: #2563eb;
+      border-color: #60a5fa;
+      transform: translateY(-1px);
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+      color: #ffffff;
+    }
+
+    .nav-btn-purple {
+      background-color: #7c3aed;
+      border-color: #a855f7;
+    }
+
+    .nav-btn-purple:hover {
+      background-color: #8b5cf6;
+      border-color: #c4b5fd;
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+    }
+
+    .nav-btn-green {
+      background-color: #16a34a;
+      border-color: #22c55e;
+    }
+
+    .nav-btn-green:hover {
+      background-color: #22c55e;
+      border-color: #4ade80;
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.6);
+    }
+
+    /* Contenedor de botones de navegación */
+    .nav-buttons-group {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 10;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page-shell">
+
+    <!-- ENCABEZADO -->
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">ARQUITECTURA DE COMPUTADORAS</p>
+        <h1>Modelo de Von Neumann</h1>
+      </div>
+
+      <div class="header-actions">
+        <button id="animationButton" class="control-button is-active" type="button">
+          Animación Activa
+        </button>
+      </div>
+    </header>
+
+    <!-- TARJETA DEL DIAGRAMA -->
+    <section class="diagram-card" aria-label="Diagrama interactivo del modelo de Von Neumann">
+
+      <div class="diagram-scroll">
+
+        <div class="diagram" id="diagram">
+
+          <!-- SVG DE CONEXIONES -->
+          <svg class="connections" viewBox="0 0 1700 820" aria-hidden="true"
+            style="pointer-events: none; overflow: visible;">
+
+            <defs>
+              <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"
+                markerUnits="strokeWidth">
+                <path d="M0,0 L0,8 L9,4 z"></path>
+              </marker>
+
+              <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"
+                markerUnits="strokeWidth">
+                <path d="M0,0 L0,8 L9,4 z" fill="#1f6feb"></path>
+              </marker>
+
+              <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"
+                markerUnits="strokeWidth">
+                <path d="M0,0 L0,8 L9,4 z" fill="#28a56c"></path>
+              </marker>
+
+              <marker id="arrow-purple" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"
+                markerUnits="strokeWidth">
+                <path d="M0,0 L0,8 L9,4 z" fill="#7c3aed"></path>
+              </marker>
+
+              <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"
+                markerUnits="strokeWidth">
+                <path d="M0,0 L0,8 L9,4 z" fill="#e05a62"></path>
+              </marker>
+
+              <linearGradient id="memoryGradient" x1="0" x2="1">
+                <stop offset="0%" stop-color="#eef6ff"></stop>
+                <stop offset="100%" stop-color="#ffffff"></stop>
+              </linearGradient>
+            </defs>
+
+            <!-- LÍNEAS DE ESTADOS DEL PROCESO -->
+            <path id="line-ready-blocked" class="connector" d="M720 286 L865 286" stroke="#2c3745" stroke-width="2"
+              marker-end="url(#arrow)"></path>
+            <path id="line-ready-finished" class="connector" d="M745 260 L760 170" stroke="#2c3745" stroke-width="2"
+              marker-end="url(#arrow)"></path>
+            <path id="line-blocked-finished" class="connector" d="M890 260 L790 170" stroke="#2c3745" stroke-width="2"
+              marker-end="url(#arrow)"></path>
+
+            <!-- 1. UCP → MMU -->
+            <path id="line-cpu-mmu" class="connector" d="M258 520
+            L258 800
+            L900 800
+            L900 600" stroke="#1f6feb" stroke-width="3" stroke-dasharray="6 4" fill="none" marker-end="url(#arrow-blue)">
+            </path>
+
+            <!-- 2. MMU → TABLA DE PÁGINAS -->
+            <path id="line-mmu-page-table" class="connector" d="M895 490 C950 490, 1000 490, 1300 490" stroke="#7c3aed"
+              stroke-width="3" marker-end="url(#arrow-purple)"></path>
+
+            <!-- 3. DISCO DURO → MMU -->
+            <path id="line-disk-mmu" class="connector" d="M716 518 L822 518" stroke="#7c3aed" stroke-width="3"></path>
+
+            <!-- 4. MMU → DIRECCIÓN VIRTUAL -->
+            <path id="line-mmu-virtual" class="connector"
+              d="M895 450 L895 430 L430 430 L360 460"
+              stroke="#7c3aed" stroke-width="3"
+              marker-end="url(#arrow-purple)"></path>
+
+            <!-- 5. RAM → JERARQUÍA DE MEMORIAS -->
+            <path id="line-ram-hierarchy" class="connector" d="M362 455
+            L360 380
+            L1100 380
+            L1100 240" stroke="#28a56c" stroke-width="3" stroke-dasharray="6 4" fill="none" marker-end="url(#arrow-green)">
+            </path>
+
+          
+       <!-- ============================================ -->
+<!-- ============================================ -->
+<!-- 5B. MMU → NUBE (AJUSTADA)                    -->
+<!-- ============================================ -->
+<path id="line-mmu-cloud" class="connector"
+  d="M 950 470
+     L 1300 470
+     L 1300 220
+     L 1340 220"
+  stroke="#28a56c" stroke-width="3" stroke-dasharray="6 4" fill="none"
+  marker-end="url(#arrow-green)"></path>
+
+            <!-- 7. BCP → FIN -->
+            <path id="line-bcp-finished" class="connector" d="M334 200 C400 180, 500 170, 760 225" stroke="#e05a62"
+              stroke-width="3" stroke-dasharray="4 4" marker-end="url(#arrow-red)"></path>
+
+            <!-- 9. UCP → RAM -->
+            <path id="line-cpu-ram" class="connector" d="M258 566 L317 566" stroke="#1f6feb" stroke-width="3"
+              marker-end="url(#arrow-blue)"></path>
+
+            <!-- 10. RAM → BUS -->
+            <path id="line-ram-bus" class="connector" d="M407 566 L453 566" stroke="#1f6feb" stroke-width="3"
+              marker-end="url(#arrow-blue)"></path>
+
+            <!-- 11. BUS → SOFTWARE CONTROLADOR -->
+            <path id="line-bus-driver" class="connector" d="M491 566 L536 566" stroke="#1f6feb" stroke-width="3"
+              marker-end="url(#arrow-blue)"></path>
+
+            <!-- 12. SOFTWARE CONTROLADOR → DISCO DURO -->
+            <path id="line-driver-disk" class="connector" d="M576 544 L628 544" stroke="#1f6feb" stroke-width="3"
+              marker-end="url(#arrow-blue)"></path>
+
+          </svg>
+
+          <!-- APLICACIONES -->
+          <div class="applications-wrapper"
+            style="position: absolute; top: 20px; left: 42px; width: 320px; height: 85px;">
+            <section id="applications" class="node applications-zone" data-title="Pseudoparalelismo"
+              data-description="técnica de los sistemas operativos donde una sola CPU cambia muy rápido entre varios programas. Esto crea la ilusión de que muchas cosas pasan a la vez, aunque el procesador atienda solo una tarea en cada instante."
+              data-image="Time slice.jpg"
+              data-specs="Tipo: Software de usuario|Ciclo: Solicitud → Ejecución → Terminación|Recursos: CPU, Memoria, E/S"
+              data-features="• Multiprogramación\n• Time Sharing\n• Gestión de procesos\n• Asignación de recursos"
+              data-stats="Procesos activos: 4|Ráfaga promedio: 45ms|Memoria: Variable" tabindex="0" role="button"
+              style="position: relative; width: 100%; height: 100%;">
+
+              <div class="app-list">
+                <span class="app-node" tabindex="0" role="button" data-title="Word"
+                  data-description="Procesador de texto que se ejecuta como un proceso de usuario; solicita tiempo de CPU y memoria al sistema operativo para funcionar.">WORD</span>
+                <span class="app-node" tabindex="0" role="button" data-title="Excel"
+                  data-description="Hoja de cálculo que corre como aplicación de usuario; genera ráfagas de CPU cada vez que realiza un cálculo o recalcula fórmulas.">EXCEL</span>
+                <span class="app-node" tabindex="0" role="button" data-title="Navegador"
+                  data-description="Aplicación que suele administrar varios procesos o hilos (uno por pestaña), consumiendo memoria y CPU de forma variable.">NAVEGADOR</span>
+                <span class="app-node" tabindex="0" role="button" data-title="PowerPoint"
+                  data-description="Programa de presentaciones que, como cualquier aplicación, es tratado por el sistema operativo como un proceso más en espera de recursos.">POWERPOINT</span>
+              </div>
+              
+              <div class="burst-chart" aria-label="Ráfagas de CPU">
+                <div class="burst-item"><span class="burst-value">30 ms</span><span class="burst-bar h-30"></span></div>
+                <div class="burst-item"><span class="burst-value">60 ms</span><span class="burst-bar h-60"></span></div>
+                <div class="burst-item"><span class="burst-value">30 ms</span><span class="burst-bar h-45"></span></div>
+                <div class="burst-item"><span class="burst-value">20 ms</span><span class="burst-bar h-75"></span></div>
+              </div>
+            </section>
+          </div>
+
+          <!-- JERARQUÍA DE MEMORIA -->
+          <section id="hierarchy" class="node hierarchy-zone" data-title="Jerarquía de memoria"
+            data-description="Organiza los dispositivos de memoria según velocidad, capacidad y costo. La pirámide muestra desde los registros más rápidos y costosos hasta el almacenamiento secundario más lento y económico."
+            data-image="Escala de memoria.webp"
+            data-specs="Registros: 1ns, 64KB|Caché: 4ns, 8MB|RAM: 80ns, 16GB|Disco: 10ms, 1TB"
+            data-features="• Caché L1, L2, L3\n• Memoria virtual\n• Paginación\n• Segmentación"
+            data-stats="Tasa aciertos: 95%|Latencia promedio: 15ns|Costo: $/GB decreciente" tabindex="0" role="button">
+
+            <svg class="memory-pyramid" viewBox="0 0 290 235" role="img" aria-label="Pirámide de jerarquía de memoria">
+              <polygon class="pyramid-body" points="145,8 18,218 272,218"></polygon>
+              <line x1="115" y1="58" x2="175" y2="58"></line>
+              <line x1="91" y1="106" x2="199" y2="106"></line>
+              <line x1="62" y1="158" x2="228" y2="158"></line>
+              <text x="145" y="43">REGISTROS</text>
+              <text x="145" y="91">CACHÉ</text>
+              <text x="145" y="140">PRIMARIA</text>
+              <text x="145" y="196">SECUNDARIA</text>
+
+              <polygon class="pyramid-segment" tabindex="0" role="button" points="145,8 114.76,58 175.24,58"
+                data-title="Registros"
+                data-description="Ubicados dentro de la UCP; son la memoria más rápida de todas, pero con la menor capacidad de almacenamiento."
+                data-image="Registros.gif"></polygon>
+              <polygon class="pyramid-segment" tabindex="0" role="button"
+                points="114.76,58 175.24,58 204.27,106 85.73,106" data-title="Memoria caché"
+                data-description="Memoria intermedia de alta velocidad que reduce el tiempo de acceso entre la UCP y la memoria RAM."
+                data-image="Cache.jpg"></polygon>
+              <polygon class="pyramid-segment" tabindex="0" role="button"
+                points="85.73,106 204.27,106 235.72,158 54.28,158" data-title="Memoria primaria"
+                data-description="Memoria principal (RAM) donde se cargan los programas y datos en ejecución; mayor capacidad que la caché, pero más lenta."
+                data-image="RAM.webp"></polygon>
+              <polygon class="pyramid-segment" tabindex="0" role="button" points="54.28,158 235.72,158 272,218 18,218"
+                data-title="Memoria secundaria"
+                data-description="Almacenamiento permanente, como el disco duro; ofrece mayor capacidad pero menor velocidad que la memoria primaria."
+                data-image="Disco Duro.jpg"></polygon>
+            </svg>
+
+            <span class="axis speed-axis">(-) VELOCIDAD (+)</span>
+            <span class="axis capacity-axis">(-) CAPACIDAD (+)</span>
+            <span class="resource-label">Recursos</span>
+          </section>
+
+          <!-- ============================================ -->
+          <!-- BOTÓN: MEMORIA (CORREGIDO)                   -->
+          <!-- ============================================ -->
+        <div id="Rmemoria" style="position: absolute; top: 41%; left: 45%; z-index: 10;">
+  <a href="memoria.html" class="nav-btn nav-btn-pale">
+    Memoria
+  </a>
+</div>
+
+          <!-- ============================================ -->
+          <!-- BOTÓN: NUBE / INTERFAZ DE RED (CORREGIDO)    -->
+          <!-- ============================================ -->
+
+<div id="nube" style="position: absolute; left: 78%; top: 10%; width: 20%; height: 25%; z-index: 10;">
+  <a href="InterfazDeRed.html"
+     style="display: block; width: 100%; height: 100%; text-decoration: none; transition: transform 0.3s ease, filter 0.3s ease;"
+     onmouseover="this.style.transform='scale(1.05)'; this.style.filter='drop-shadow(0 0 15px rgba(0,0,0,0.7))';"
+     onmouseout="this.style.transform='scale(1)'; this.style.filter='drop-shadow(0 0 6px rgba(0,0,0,0.4))';">
+
+    <svg viewBox="0 0 300 220" preserveAspectRatio="xMidYMid meet"
+         style="width: 100%; height: 100%; filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.4));">
+
+      <!-- Cuerpo de la nube (SOLO CONTORNO, TRANSPARENTE, NEGRO) -->
+      <path d="M 75 170
+               C 30 170, 15 135, 40 110
+               C 25 80, 55 50, 95 60
+               C 105 20, 170 15, 195 55
+               C 235 40, 275 70, 265 110
+               C 290 130, 285 170, 245 175
+               Z"
+            fill="none"
+            stroke="#000000"
+            stroke-width="3" />
+
+      <!-- Texto principal -->
+      <text x="150" y="118"
+            font-family="Segoe UI, sans-serif"
+            font-size="26"
+            font-weight="800"
+            fill="#000000"
+            text-anchor="middle">
+        NUBE
+      </text>
+
+      <!-- Subtítulo -->
+      <text x="150" y="140"
+            font-family="Segoe UI, sans-serif"
+            font-size="13"
+            font-weight="600"
+            fill="#000000"
+            text-anchor="middle">
+        INTERFAZ DE RED
+      </text>
+
+    </svg>
+  </a>
+</div>
+          
+          <!-- ============================================ -->
+
+
+
+          <!-- BCP -->
+          <section id="bcp" class="node bcp-zone" data-title="BCP - Bloque de Control de Proceso"
+            data-description="Estructura de datos que almacena toda la información necesaria para administrar un proceso. Incluye identificador, estado, contador de programa, registros, información de memoria y recursos."
+            data-image="BCP.png"
+            data-specs="Tamaño: ~1KB por proceso|Campos: 15-20|Actualización: Cada cambio de contexto"
+            data-features="• Identificador del proceso (PID)\n• Estado del proceso\n• Contador de programa (PC)\n• Registros de la UCP\n• Información de memoria\n• Recursos abiertos"
+            data-stats="Procesos gestionados: 4|Cambios de contexto: 100/s|Memoria total: 4KB" tabindex="0"
+            role="button">
+
+            <h2>BCP (BLOQUE DE CONTROL DE PROCESO)</h2>
+
+            <div class="bcp-table">
+              <div class="bcp-row">
+                <span class="bcp-index">0</span>
+                <button class="process-chip" data-process="A" type="button">A</button>
+              </div>
+              <div class="bcp-row">
+                <span class="bcp-index">1</span>
+                <button class="process-chip" data-process="B" type="button">B</button>
+                <button class="process-chip" data-process="C" type="button">C</button>
+              </div>
+              <div class="bcp-row">
+                <span class="bcp-index">2</span>
+                <span class="empty-slot">Disponible</span>
+              </div>
+              <div class="bcp-row">
+                <span class="bcp-index">3</span>
+                <button class="process-chip" data-process="D" type="button">D</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ESTADOS DE UN PROCESO -->
+          <section class="process-zone" aria-label="Estados de un proceso">
+
+            <button id="start" class="state-node state-start node" data-title="Inicio / Creación"
+              data-description="El proceso se crea cuando el sistema operativo recibe una solicitud de ejecución. Se asigna un PID y se inicializa el BCP. El proceso aún no ha sido admitido en la cola de listos."
+              data-image="Ciclo de un Proceso.jpg"
+              data-specs="Duración: <1ms|Evento: Solicitud de ejecución|Transición: Admisión"
+              data-features="• Asignación de PID\n• Creación de BCP\n• Inicialización de registros\n• Carga de programa"
+              data-stats="Procesos creados: 4|Tiempo creación: 0.5ms|Memoria asignada: Inicial" type="button">
+              inicio
+            </button>
+
+            <button id="ready" class="state-node node" data-title="Preparado (Ready)"
+              data-description="El proceso está listo para ejecutarse y espera que el planificador le asigne tiempo de CPU. Se encuentra en la cola de procesos listos."
+              data-image="Ciclo de un Proceso.jpg"
+              data-specs="Duración: Variable|Cola: FIFO / Prioridad|Evento: Asignación de CPU"
+              data-features="• En cola de listos\n• Espera de CPU\n• Prioridad dinámica\n• Tiempo de espera"
+              data-stats="Procesos listos: 2|Tiempo espera: 15ms|Prioridad: Media" type="button">
+              P
+              <span>Preparado</span>
+            </button>
+
+            <button id="blocked" class="state-node node" data-title="Bloqueado (Blocked)"
+              data-description="El proceso no puede continuar su ejecución porque está esperando un evento, como una operación de E/S. El planificador lo retira de la CPU."
+              data-image="Ciclo de un Proceso.jpg"
+              data-specs="Duración: Depende de E/S|Evento: Lectura/Escritura|Transición: Desbloqueo"
+              data-features="• Espera de E/S\n• Eventos sincronización\n• Semáforos\n• Monitores"
+              data-stats="Procesos bloqueados: 1|Tiempo E/S: 50ms|Recurso esperado: Disco" type="button">
+              B
+              <span>Bloqueado</span>
+            </button>
+
+            <button id="finished" class="state-node node" data-title="Finalizado (Terminated)"
+              data-description="El proceso ha completado su ejecución o ha sido terminado por el sistema operativo. Se liberan todos los recursos asignados."
+              data-image="Ciclo de un Proceso.jpg" data-specs="Duración: <1ms|Código: 0 (éxito)|Recursos: Liberados"
+              data-features="• Código de salida\n• Liberación de memoria\n• Cierre de archivos\n• Estadísticas"
+              data-stats="Procesos finalizados: 1|Tiempo ejecución: 100ms|Código salida: 0" type="button">
+              F
+              <span>Finalizado</span>
+            </button>
+          </section>
+
+          <div class="section-title physical-title">DIRECCIÓN FÍSICA</div>
+
+          <!-- CPU -->
+          <section id="cpu" class="node cpu-zone" data-title="UCP - Unidad Central de Procesamiento"
+            data-description="El cerebro del computador. Ejecuta instrucciones, realiza cálculos y coordina todos los demás componentes del sistema. Sigue el ciclo de búsqueda, decodificación y ejecución."
+            data-image="CPU (UCP).jpg" data-specs="Arquitectura: Von Neumann|Frecuencia: 3.5GHz|Cores: 4|TDP: 65W"
+            data-features="• Ciclo de instrucción\n• Pipeline\n• Caché interna\n• Predictor de saltos\n• Ejecución fuera de orden"
+            data-stats="IPS: 3.5B|Instrucciones: 2000/ms|Temperatura: 65°C" tabindex="0" role="button">
+
+            <span class="component-caption">UCP</span>
+
+            <div class="cpu-frame">
+              <div id="alu" class="alu node" data-title="Unidad Aritmética y Lógica (ALU)"
+                data-description="Componente de la UCP que realiza todas las operaciones aritméticas (suma, resta, multiplicación, división) y lógicas (AND, OR, NOT, XOR). Es la unidad ejecutora principal."
+                data-image="Unidad Aritmetica.jpg"
+                data-specs="Operaciones: +, -, ×, ÷, &, |, ~, ^|Tamaño: 64 bits|Latencia: 1 ciclo"
+                data-features="• Aritmética entera\n• Punto flotante\n• Operaciones lógicas\n• Comparaciones\n• Desplazamientos"
+                data-stats="Operaciones/s: 10B|Uso promedio: 85%|Instrucciones: 500/ms" tabindex="0" role="button">
+                UNIDAD<br>ARITMÉTICA Y LÓGICA
+              </div>
+
+              <div id="pc-register" class="pc-register node" data-title="Contador de Programa (PC)"
+                data-description="Registro especial que mantiene la dirección de memoria de la siguiente instrucción a ejecutar. Se incrementa automáticamente después de cada instrucción o se modifica con saltos."
+                data-image="Unidad de Control.jpg" data-specs="Tamaño: 64 bits|Tipo: Contador|Actualización: Automática"
+                data-features="• Secuencia lineal\n• Saltos condicionales\n• Saltos incondicionales\n• Llamadas a funciones"
+                data-stats="Valor actual: 0x1000|Incremento: 4 bytes|Saltos realizados: 1000/s" tabindex="0"
+                role="button">
+                PC
+              </div>
+
+              <div id="control-unit" class="control-unit node" data-title="Unidad de Control"
+                data-description="Componente que decodifica las instrucciones y genera las señales de control necesarias para coordinar todas las unidades de la UCP. Interpreta el código de operación."
+                data-image="Unidad de Control.jpg" data-specs="Microinstrucciones: 200|Ciclo: 1-3 etapas|Ancho: 32 bits"
+                data-features="• Decodificación\n• Generación de señales\n• Control de pipeline\n• Manejo de interrupciones"
+                data-stats="Instrucciones decodificadas: 1000/ms|Señales: 50|Estados: 10" tabindex="0" role="button">
+                <strong>UNIDAD DE CONTROL</strong>
+                <ul>
+                  <li>PC - Contador de programa</li>
+                  <li>SP - STACK POINTER</li>
+                  <li>RI - Registro de instrucciones</li>
+                  <li>RE - Registro de estado</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <!-- RAM -->
+          <section id="ram" class="node ram-zone" data-title="Memoria RAM"
+            data-description="Memoria de acceso aleatorio que almacena temporalmente instrucciones y datos que están siendo utilizados por el procesador. Es volátil y más rápida que el almacenamiento secundario."
+            data-image="RAM.webp" data-specs="Tipo: DDR4|Capacidad: 16GB|Frecuencia: 3200MHz|Latencia: 16ns"
+            data-features="• Acceso aleatorio\n• Actualización dinámica\n• ECC (corrección)\n• Memoria dual-channel"
+            data-stats="Ancho banda: 25GB/s|Uso actual: 65%|Tiempo acceso: 80ns" tabindex="0" role="button">
+
+            <span class="component-caption">RAM</span>
+
+            <div class="ram-grid" aria-hidden="true">
+              <span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span>
+            </div>
+          </section>
+
+          <!-- BUS -->
+          <section id="bus" class="node bus-zone" data-title="BUS del Sistema"
+            data-description="Sistema de comunicación que transporta datos, direcciones y señales de control entre todos los componentes. Puede ser de datos, direcciones o control."
+            data-image="Buses.jpg" data-specs="Ancho: 64 bits|Frecuencia: 100MHz|Tipo: Síncrono|Topología: Paralelo"
+            data-features="• Bus de datos\n• Bus de direcciones\n• Bus de control\n• DMA\n• Arbitraje"
+            data-stats="Tasa transferencia: 800MB/s|Ancho banda: 6.4GB/s|Tráfico: 40%" tabindex="0" role="button">
+
+            <span>B</span><span>U</span><span>S</span>
+            <div class="bus-pulse"></div>
+          </section>
+
+          <!-- DRIVER -->
+          <section id="driver" class="node driver-zone" data-title="Software Controlador (Driver)"
+            data-description="Software que permite al sistema operativo comunicarse con un dispositivo específico. Traduce las solicitudes del SO a comandos que el hardware puede entender."
+            data-image="SoftwareControlador.jpg" data-specs="Interfaz: PnP|Protocolo: SATA/NVMe|Versión: 1.3"
+            data-features="• Gestión de dispositivos\n• Traducción de comandos\n• Manejo de errores\n• Buffer de E/S"
+            data-stats="Dispositivos soportados: 5|Velocidad: 6Gbps|Tiempo respuesta: 1ms" tabindex="0" role="button">
+
+            <span>SOFTWARE CONTROLADOR</span>
+          </section>
+
+          <!-- DISCO DURO -->
+          <section id="disk" class="node disk-zone" data-title="Disco Duro (HDD)"
+            data-description="Dispositivo de almacenamiento magnético que guarda datos de forma permanente. Utiliza platos giratorios y cabezales de lectura/escritura para acceder a la información."
+            data-image="Disco Duro.jpg" data-specs="Capacidad: 1TB|Velocidad: 7200RPM|Caché: 256MB|Interfaz: SATA III"
+            data-features="• Almacenamiento magnético\n• Platos giratorios\n• Cabezales móviles\n• Cache de disco"
+            data-stats="Tasa transferencia: 200MB/s|Tiempo acceso: 10ms|Uso: 70%" tabindex="0" role="button">
+
+            <div class="disk-top"></div>
+            <div class="disk-body">
+              <span>DISCO<br>DURO</span>
+              <i class="disk-light"></i>
+            </div>
+            <div class="disk-bottom"></div>
+          </section>
+
+          <!-- ENTRADA -->
+          <section id="input" class="node io-box input-zone" data-title="Dispositivos de Entrada"
+            data-description="Permiten introducir datos y órdenes al computador. Transforman acciones del usuario en señales digitales que el sistema puede procesar."
+            data-image="Entradas.webp" data-specs="Teclado: USB, 104 teclas|Mouse: Óptico, 1600DPI|Interfaz: USB 2.0"
+            data-features="• Teclado\n• Mouse\n• Escáner\n• Micrófono\n• Cámara web"
+            data-stats="Tasa entrada: 1000Hz|Latencia: 8ms|Dispositivos: 3" tabindex="0" role="button">
+
+            <strong>ENTRADA</strong>
+            <span>Teclado</span>
+            <span>Mouse</span>
+          </section>
+
+          <!-- ETIQUETAS CON NOMBRES -->
+          <div id="diego" style="position: absolute; top: 8%; left: 59%;">
+            <p><strong>DIEGO</strong></p>
+          </div>
+
+          <div id="diego" style="position: absolute; top: 40%; left: 72%;">
+            <p><strong>DIEGO</strong></p>
+          </div>
+
+          <div id="diego" style="position: absolute; top: 89.5%; left: 31.5%;">
+            <p><strong>Ober</strong></p>
+          </div>
+
+          <div id="diego" style="position: absolute; top: 78%; left: 50%;">
+            <p><strong>Ober</strong></p>
+          </div>
+
+          <div id="diego" style="position: absolute; top:51%; left: 38.5%;">
+            <p><strong>Ober</strong></p>
+          </div>
+
+          <div id="diego" style="position: absolute; top: 85%; left: 6.5%;">
+            <p><strong>Jonathan</strong></p>
+          </div>
+
+          <div id="diego" style="position: absolute; top: 89.5%; left: 19%;">
+            <p><strong>Jonathan</strong></p>
+          </div>
+
+          <div id="diego" style="position: absolute; top: 89.5%; left: 25.5%;">
+            <p><strong>Jonathan</strong></p>
+          </div>
+
+          <div id="diego" style="position: absolute; top: 10%; left: 9%;">
+            <p><strong>Gabriel</strong></p>
+          </div>
+
+          <div id="diego" style="position: absolute; top: 15%; left: 49%;">
+            <p><strong>Gabriel</strong></p>
+          </div>
+
+          <div id="diego" style="position: absolute; top: 15%; left: 32%;">
+            <p><strong>Gabriel</strong></p>
+          </div>
+
+          <!-- SALIDA -->
+          <section id="output" class="node io-box output-zone" data-title="Dispositivos de Salida"
+            data-description="Permiten al usuario ver los resultados del procesamiento. Convierten señales digitales en información comprensible para los humanos."
+            data-image="Salida.webp" data-specs="Monitor: 1920×1080@60Hz|Impresora: 1200DPI|Color: 16.7M"
+            data-features="• Monitor\n• Impresora\n• Altavoces\n• Proyector\n• Plotter"
+            data-stats="Tasa salida: 60Hz|Resolución: Full HD|Dispositivos: 2" tabindex="0" role="button">
+
+            <strong>SALIDA</strong>
+            <span>Monitor</span>
+            <span>Impresora</span>
+          </section>
+
+          <!-- MMU -->
+          <section id="mmu" class="node mmu-zone" data-title="MMU - Unidad de Gestión de Memoria"
+            data-description="Traduce direcciones virtuales a direcciones físicas y controla el acceso a la memoria. Implementa paginación y segmentación para gestionar la memoria virtual."
+            data-image="MMU.jpg" data-specs="Tamaño página: 4KB|TLB: 64 entradas|Latencia: 2 ciclos"
+            data-features="• Traducción de direcciones\n• Protección de memoria\n• Paginación\n• Segmentación\n• TLB"
+            data-stats="Traducciones/ms: 1000|Fallos TLB: 5%|Uso memoria: 75%" tabindex="0" role="button">
+
+            <strong>MMU</strong>
+
+            <ol>
+              <li>Segmentos</li>
+              <li>Páginas</li>
+              <li>Marcos</li>
+            </ol>
+
+            <div class="translation-flow">
+              <span>V</span><i></i><span>F</span>
+            </div>
+          </section>
+
+          <!-- CONTENEDOR: MEMORIA VIRTUAL -->
+          <div id="virtual-memory-container" class="virtual-memory-container">
+
+            <!-- DIRECCIÓN VIRTUAL -->
+            <section id="virtual-address" class="node virtual-address-zone" data-title="Dirección Virtual"
+              data-description="Dirección generada por el procesador durante la ejecución. La MMU la traduce a una dirección física real en la memoria RAM."
+              data-image="Administracion de memoria.png" data-specs="Rango: 0-2^64|Página: 4KB|Desplazamiento: 12 bits"
+              data-features="• Espacio virtual por proceso\n• Aislamiento entre procesos\n• Memoria compartida\n• Crecimiento dinámico"
+              data-stats="Direcciones/ms: 1000|Espacio virtual: 4GB|Procesos: 4" tabindex="0" role="button">
+
+              <table>
+                <thead>
+                  <tr>
+                    <th>DR</th>
+                    <th>BYTE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>101</td>
+                    <td>1111001</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <strong>DIR. VIRTUAL</strong>
+            </section>
+
+            <!-- ============================================ -->
+            <!-- BOTÓN: DIRECCIÓN VIRTUAL (CORREGIDO)         -->
+            <!-- ============================================ -->
+            <a class="nav-btn" href="direcVirtual.html" role="button"
+               style="margin-top: 8px;">
+               Dirección Virtual
+            </a>
+
+            <!-- TABLA DE PÁGINAS -->
+            <section id="page-table" class="node page-table-zone" data-title="Tabla de Páginas"
+              data-description="Estructura de datos que relaciona páginas virtuales con marcos de memoria física. La MMU la consulta para realizar la traducción de direcciones."
+              data-image="Administracion de memoria.png"
+              data-specs="Entradas: 1024|Tamaño: 4MB|Organización: Jerárquica"
+              data-features="• Bit de presente\n• Bit de modificación\n• Bit de referencia\n• Protección r/w/x"
+              data-stats="Entradas usadas: 3/6|Tasa acierto: 98%|Actualizaciones: 10/s" tabindex="0" role="button">
+
+              <table>
+                <thead>
+                  <tr>
+                    <th>ORDEN</th>
+                    <th>ESTADO</th>
+                    <th>MARCO</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>0</td>
+                    <td>0</td>
+                    <td>FF001</td>
+                  </tr>
+                  <tr>
+                    <td>1</td>
+                    <td>1</td>
+                    <td>AB231</td>
+                  </tr>
+                  <tr>
+                    <td>2</td>
+                    <td>1</td>
+                    <td>BB798</td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td>0</td>
+                    <td>AB555</td>
+                  </tr>
+                  <tr>
+                    <td>4</td>
+                    <td>0</td>
+                    <td>AA010</td>
+                  </tr>
+                  <tr>
+                    <td>5</td>
+                    <td>0</td>
+                    <td>BD777</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- TOOLTIP -->
+  <div id="tooltip" class="tooltip" role="tooltip"></div>
+
+  <!-- MODAL -->
+  <div id="modalBackdrop" class="modal-backdrop">
+    <div id="componentCard" class="component-card" role="dialog" aria-modal="true" aria-labelledby="cardTitle">
+
+      <button id="closeCard" class="card-close" type="button" aria-label="Cerrar">×</button>
+
+      <div id="cardImageFrame" class="card-image-frame">
+        <img id="cardImage" class="card-image" src="" alt="">
+        <span id="cardImageFallback" class="card-image-fallback">Imagen no disponible en la carpeta IMG</span>
+      </div>
+
+      <span class="panel-kicker">COMPONENTE</span>
+      <h3 id="cardTitle">Selecciona un componente</h3>
+
+      <div id="cardSubtitle" class="card-subtitle"></div>
+
+      <p id="cardDescription" class="card-description">
+        Haz clic sobre una parte del diagrama para ver su descripción.
+      </p>
+
+      <div id="cardSpecs" class="card-specs" style="display:none;"></div>
+
+      <div id="cardFeatures" class="card-features" style="display:none;">
+        <h4>Características</h4>
+        <ul id="cardFeaturesList"></ul>
+      </div>
+
+      <div id="cardStats" class="card-stats" style="display:none;"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>

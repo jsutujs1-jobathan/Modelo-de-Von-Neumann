@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Round Robin - Simulación Visual</title>
+    <style>
+        /* --- Estilos Generales Reajustados --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            margin: 0;
+            padding: 10px;
+        }
+
+        /* HEADER TOTALMENTE BLANCO */
+        header {
+            background-color: #ffffff;
+            color: #2c3e50;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+            border: 1px solid #e0e0e0;
+        }
+
+        header h1 { 
+            margin: 0; 
+            font-size: 1.2em; 
+            color: #2c3e50;
+        }
+
+        .btn-back {
+            background-color: #ffffff;
+            color: #3498db;
+            border: 1.5px solid #3498db;
+            text-decoration: none;
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.85em;
+            transition: all 0.3s;
+        }
+        .btn-back:hover { 
+            background-color: #3498db; 
+            color: white;
+        }
+
+        /* --- Contenedor Principal --- */
+        .main-container {
+            display: flex;
+            gap: 15px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* --- Panel de Información (Izquierda) --- */
+        .info-panel {
+            width: 280px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .info-btn {
+            background-color: #fff;
+            border: 1.5px solid #bdc3c7;
+            border-radius: 6px;
+            padding: 8px 12px;
+            text-align: left;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85em;
+            color: #2c3e50;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .info-btn:hover {
+            background-color: #ecf0f1;
+            border-color: #95a5a6;
+        }
+
+        .info-btn.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .info-content {
+            background-color: #fff;
+            border-left: 4px solid #3498db;
+            padding: 8px 12px;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.82em;
+            line-height: 1.35;
+            display: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-top: 2px;
+            margin-bottom: 2px;
+            color: #444;
+        }
+
+        .info-content.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Área de Simulación y Pestañas (Derecha) --- */
+        .simulation-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* Navegación por Pestañas */
+        .tabs-header {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 2px;
+        }
+
+        .tab-btn {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-bottom: none;
+            padding: 8px 16px;
+            font-weight: bold;
+            font-size: 0.85em;
+            color: #2c3e50;
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .tab-btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        .tab-btn.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+
+        /* Contenido de la pestaña */
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .slide-container {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 0 0 8px 8px;
+            padding: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+
+        .slide-title {
+            font-size: 0.95em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            display: inline-block;
+            padding-bottom: 2px;
+        }
+
+        /* --- Estilos base de los componentes visuales --- */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .label {
+            font-size: 0.75em;
+            color: #666;
+            text-align: center;
+            margin-top: 2px;
+        }
+
+        /* Cajas de Procesos */
+        .process-box {
+            background: linear-gradient(145deg, #f1c40f, #f39c12);
+            color: #333;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8em;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.15);
+            border: 1px solid #d35400;
+            min-width: 38px;
+            text-align: center;
+        }
+
+        .process-box.blocked {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            color: white;
+            border: 1px solid #a93226;
+        }
+
+        .process-box.cpu-box {
+            background: linear-gradient(145deg, #f1c40f, #f39c12);
+            padding: 6px 10px;
+            font-size: 0.85em;
+            border: 1.5px solid #d35400;
+        }
+
+        .process-box.terminated {
+            background: linear-gradient(145deg, #2ecc71, #27ae60);
+            color: white;
+            border: 1px solid #1e8449;
+        }
+
+        /* Colas */
+        .queue {
+            display: flex;
+            gap: 4px;
+            padding: 4px;
+            background-color: rgba(0,0,0,0.03);
+            border-radius: 4px;
+            border: 1px dashed #bdc3c7;
+            min-height: 26px;
+            align-items: center;
+        }
+
+        /* CPU y Reloj */
+        .cpu-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f9fc;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1.5px solid #bce0fd;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        /* Brillante de selección */
+        .cpu-area.highlight {
+            border-color: #2196F3 !important;
+            box-shadow: 0 0 12px rgba(33, 150, 243, 0.7) !important;
+            transform: scale(1.015);
+            z-index: 10;
+        }
+
+        .cpu-title {
+            font-weight: bold;
+            color: #2980b9;
+            font-size: 0.9em;
+            margin-bottom: 2px;
+        }
+
+        .clock {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid #e74c3c;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 3px 0;
+        }
+
+        .clock-hand {
+            position: absolute;
+            width: 2px;
+            height: 16px;
+            background-color: #333;
+            bottom: 50%;
+            transform-origin: bottom center;
+            border-radius: 2px;
+        }
+
+        .arrow-down {
+            width: 0; 
+            height: 0; 
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 6px solid #7f8c8d;
+            margin: 2px auto;
+        }
+
+        .arrow-right {
+            width: 0; 
+            height: 0; 
+            border-top: 4px solid transparent;
+            border-bottom: 4px solid transparent;
+            border-left: 6px solid #7f8c8d;
+        }
+
+        /* --- REDUCCIÓN ESPECÍFICA DE ESCALA PARA PÁGINA 2 --- */
+        #tab2 .cpu-area {
+            padding: 6px 8px;
+        }
+        #tab2 .grid-layout {
+            gap: 8px;
+        }
+        #tab2 .clock {
+            width: 32px;
+            height: 32px;
+            border-width: 2px;
+            margin: 2px 0;
+        }
+        #tab2 .clock-hand {
+            height: 12px;
+        }
+        #tab2 .process-box {
+            padding: 2px 5px;
+            font-weight: bold;
+            font-size: 0.72em;
+            min-width: 30px;
+        }
+        #tab2 .process-box.cpu-box {
+            padding: 4px 8px;
+            font-size: 0.8em;
+        }
+        #tab2 .queue {
+            padding: 2px 4px;
+            min-height: 22px;
+            gap: 3px;
+        }
+        #tab2 .label {
+            font-size: 0.7em;
+            margin-top: 1px;
+        }
+        #tab2 .arrow-down {
+            margin: 1px auto;
+        }
+
+        /* Adaptabilidad */
+        @media (max-width: 850px) {
+            .main-container { flex-direction: column; }
+            .info-panel { width: 100%; }
+            .grid-layout { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ENCABEZADO BLANCO -->
+    <header>
+        <h1>Simulación Algoritmo Round Robin (Q=20)</h1>
+        <a href="index.html" class="btn-back">← Volver al modelo</a>
+    </header>
+
+    <div class="main-container">
+        <!-- PANEL DE INFORMACIÓN (IZQUIERDA) -->
+        <div class="info-panel">
+            <div>
+                <button class="info-btn" onclick="highlightStep(1, 'tab1', this)">Paso 1 <span>+</span></button>
+                <div id="info1" class="info-content"><b>Estado Inicial:</b> La CPU está libre. En la cola de listos esperan los procesos <b>P1, P2, P3 y P4</b>. En la cola de bloqueados se encuentran <b>P5, P6 y P8</b>.</div>
+            </div>
+            <div>
+                <button class="info-btn" onclick="highlightStep(2, 'tab1', this)">Paso 2 <span>+</span></button>
+                <div id="info2" class="info-content"><b>Inicio de P1:</b> El proceso P1 toma la CPU con un tiempo total requerido de 53 unidades. El reloj inicia su conteo para el Quantum (Q=20).</div>
+            </div>
+            <div>
+                <button class="info-btn" onclick="highlightStep(3, 'tab1', this)">Paso 3 <span>+</span></button>
+                <div id="info3" class="info-content"><b>Fin de Quantum (P1):</b> P1 consume su límite de 20 unidades de tiempo en CPU. Le restan 33 unidades por ejecutar y es enviado al final de la cola de listos.</div>
+            </div>
+            <div>
+                <button class="info-btn" onclick="highlightStep(4, 'tab1', this)">Paso 4 <span>+</span></button>
+                <div id="info4" class="info-content"><b>Turno de P2:</b> Entra P2 a la CPU. Requiere solo 17 unidades de tiempo para ejecutarse completamente.</div>
+            </div>
+            <div>
+                <button class="info-btn" onclick="highlightStep(5, 'tab2', this)">Paso 5 <span>+</span></button>
+                <div id="info5" class="info-content"><b>Finalización de P2:</b> Como el tiempo de P2 (17) es menor que el Quantum (20), el proceso <b>termina completamente</b> y libera la CPU inmediatamente.</div>
+            </div>
+            <div>
+                <button class="info-btn" onclick="highlightStep(6, 'tab2', this)">Paso 6 <span>+</span></button>
+                <div id="info6" class="info-content"><b>Turno de P3:</b> Toma el control la CPU con un tiempo total de 68 unidades para procesar.</div>
+            </div>
+            <div>
+                <button class="info-btn" onclick="highlightStep(7, 'tab2', this)">Paso 7 <span>+</span></button>
+                <div id="info7" class="info-content"><b>Bloqueo de P3:</b> Tras ejecutar 10 unidades, P3 se detiene para esperar una operación de E/S. Se guarda su estado (restan 58) y pasa a la <b>cola de bloqueados</b>.</div>
+            </div>
+            <div>
+                <button class="info-btn" onclick="highlightStep(8, 'tab2', this)">Paso 8 <span>+</span></button>
+                <div id="info8" class="info-content"><b>Turno de P4:</b> P4 entra a la CPU con 24 unidades. Agota su Quantum completo (20 unidades) y vuelve a la cola de listos con solo 4 unidades pendientes.</div>
+            </div>
+        </div>
+
+        <!-- ÁREA DE SIMULACIÓN -->
+        <div class="simulation-area">
+            <!-- Pestañas -->
+            <div class="tabs-header">
+                <button id="btn-tab1" class="tab-btn active" onclick="switchTab('tab1')">Página 1 (Pasos 1 a 4)</button>
+                <button id="btn-tab2" class="tab-btn" onclick="switchTab('tab2')">Página 2 (Pasos 5 a 8)</button>
+            </div>
+
+            <!-- PÁGINA 1 -->
+            <div id="tab1" class="tab-pane active">
+                <div class="slide-container">
+                    <div class="slide-title">Simulación - Parte 1</div>
+                    <div class="grid-layout">
+                        <!-- Paso 1 -->
+                        <div id="step-box-1" class="cpu-area">
+                            <div class="cpu-title">Paso 1</div>
+                            <div class="row" style="justify-content: center;">
+                                <div class="process-box">P4</div>
+                                <div class="arrow-right"></div>
+                                <div class="queue">
+                                    <div class="process-box">P3</div>
+                                    <div class="process-box">P2</div>
+                                    <div class="process-box">P1</div>
+                                </div>
+                            </div>
+                            <div class="label">Cola de listos</div>
+                            <div class="arrow-down"></div>
+                            <div class="cpu-title">CPU</div>
+                            <div class="clock"><div class="clock-hand" style="transform: rotate(0deg);"></div></div>
+                            <div class="label">Reloj Q=20</div>
+                            <div class="arrow-down"></div>
+                            <div class="queue" style="border-color: #e74c3c;">
+                                <div class="process-box blocked">P5</div>
+                                <div class="process-box blocked">P6</div>
+                                <div class="process-box blocked">P8</div>
+                            </div>
+                            <div class="label">Cola de bloqueados</div>
+                        </div>
+
+                        <!-- Paso 2 -->
+                        <div id="step-box-2" class="cpu-area">
+                            <div class="cpu-title">Paso 2</div>
+                            <div class="queue" style="margin-bottom: 4px;">
+                                <div class="process-box">P4 <small>24</small></div>
+                                <div class="process-box">P3 <small>68</small></div>
+                                <div class="process-box">P2 <small>17</small></div>
+                            </div>
+                            <div class="label">Cola de listos</div>
+                            <div class="arrow-down"></div>
+                            <div class="cpu-title">CPU</div>
+                            <div class="process-box cpu-box">P1 <small>53</small></div>
+                            <div class="clock"><div class="clock-hand" style="transform: rotate(45deg);"></div></div>
+                            <div class="label">Reloj Q=20</div>
+                        </div>
+
+                        <!-- Paso 3 -->
+                        <div id="step-box-3" class="cpu-area">
+                            <div class="cpu-title">Paso 3</div>
+                            <div class="queue" style="margin-bottom: 4px;">
+                                <div class="process-box">P4 <small>24</small></div>
+                                <div class="process-box">P3 <small>68</small></div>
+                                <div class="process-box">P2 <small>17</small></div>
+                            </div>
+                            <div class="label">Cola de listos</div>
+                            <div class="arrow-down"></div>
+                            <div class="cpu-title">CPU</div>
+                            <div class="process-box cpu-box">P1 <small>33</small></div>
+                            <div class="clock"><div class="clock-hand" style="transform: rotate(90deg);"></div></div>
+                            <div class="label">Reloj Q=20</div>
+                        </div>
+
+                        <!-- Paso 4 -->
+                        <div id="step-box-4" class="cpu-area">
+                            <div class="cpu-title">Paso 4</div>
+                            <div class="queue" style="margin-bottom: 4px;">
+                                <div class="process-box">P1 <small>33</small></div>
+                                <div class="process-box">P4 <small>24</small></div>
+                                <div class="process-box">P3 <small>68</small></div>
+                            </div>
+                            <div class="label">Cola de listos</div>
+                            <div class="arrow-down"></div>
+                            <div class="cpu-title">CPU</div>
+                            <div class="process-box cpu-box">P2 <small>17</small></div>
+                            <div class="clock"><div class="clock-hand" style="transform: rotate(135deg);"></div></div>
+                            <div class="label">Reloj Q=20</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PÁGINA 2 (ESCALA REDUCIDA) -->
+            <div id="tab2" class="tab-pane">
+                <div class="slide-container">
+                    <div class="slide-title">Simulación - Parte 2</div>
+                    <div class="grid-layout">
+                        <!-- Paso 5 -->
+                        <div id="step-box-5" class="cpu-area">
+                            <div class="cpu-title">Paso 5</div>
+                            <div class="queue">
+                                <div class="process-box">P1 <small>33</small></div>
+                                <div class="process-box">P4 <small>24</small></div>
+                            </div>
+                            <div class="label">Cola de listos</div>
+                            <div class="arrow-down"></div>
+                            <div class="cpu-title">CPU</div>
+                            <div class="process-box cpu-box">P3 <small>68</small></div>
+                            <div class="clock"><div class="clock-hand" style="transform: rotate(180deg);"></div></div>
+                            <div class="label">Reloj Q=20</div>
+                            <div class="arrow-down"></div>
+                            <div class="process-box terminated">P2 <small>00</small></div>
+                            <div class="label">Terminado</div>
+                        </div>
+
+                        <!-- Paso 6 -->
+                        <div id="step-box-6" class="cpu-area">
+                            <div class="cpu-title">Paso 6</div>
+                            <div class="queue">
+                                <div class="process-box">P1 <small>33</small></div>
+                                <div class="process-box">P4 <small>24</small></div>
+                            </div>
+                            <div class="label">Cola de listos</div>
+                            <div class="arrow-down"></div>
+                            <div class="cpu-title">CPU</div>
+                            <div class="process-box cpu-box">P3 <small>58</small></div>
+                            <div class="clock"><div class="clock-hand" style="transform: rotate(225deg);"></div></div>
+                            <div class="label">Reloj Q=20</div>
+                            <div class="arrow-down"></div>
+                            <div class="process-box terminated">P2 <small>00</small></div>
+                            <div class="label">Terminado</div>
+                        </div>
+
+                        <!-- Paso 7 -->
+                        <div id="step-box-7" class="cpu-area">
+                            <div class="cpu-title">Paso 7</div>
+                            <div class="queue">
+                                <div class="process-box">P1 <small>33</small></div>
+                            </div>
+                            <div class="label">Cola de listos</div>
+                            <div class="arrow-down"></div>
+                            <div class="cpu-title">CPU</div>
+                            <div class="process-box cpu-box">P4 <small>24</small></div>
+                            <div class="clock"><div class="clock-hand" style="transform: rotate(270deg);"></div></div>
+                            <div class="label">Reloj Q=20</div>
+                            <div class="arrow-down"></div>
+                            <div class="queue" style="border-color: #e74c3c;">
+                                <div class="process-box blocked">P5</div>
+                                <div class="process-box blocked">P6</div>
+                                <div class="process-box blocked">P8</div>
+                                <div class="process-box blocked">P3 <small>58</small></div>
+                            </div>
+                            <div class="label">Cola de bloqueados</div>
+                            <div class="process-box terminated">P2 <small>00</small></div>
+                            <div class="label">Terminado</div>
+                        </div>
+
+                        <!-- Paso 8 -->
+                        <div id="step-box-8" class="cpu-area">
+                            <div class="cpu-title">Paso 8</div>
+                            <div class="queue">
+                                <div class="process-box">P1 <small>33</small></div>
+                            </div>
+                            <div class="label">Cola de listos</div>
+                            <div class="arrow-down"></div>
+                            <div class="cpu-title">CPU</div>
+                            <div class="process-box cpu-box">P4 <small>04</small></div>
+                            <div class="clock"><div class="clock-hand" style="transform: rotate(315deg);"></div></div>
+                            <div class="label">Reloj Q=20</div>
+                            <div class="arrow-down"></div>
+                            <div class="queue" style="border-color: #e74c3c;">
+                                <div class="process-box blocked">P5</div>
+                                <div class="process-box blocked">P6</div>
+                                <div class="process-box blocked">P8</div>
+                                <div class="process-box blocked">P3 <small>58</small></div>
+                            </div>
+                            <div class="label">Cola de bloqueados</div>
+                            <div class="process-box terminated">P2 <small>00</small></div>
+                            <div class="label">Terminado</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SCRIPT DE INTERACTIVIDAD -->
+    <script>
+        function highlightStep(stepNum, tabId, btn) {
+            switchTab(tabId);
+
+            const content = document.getElementById('info' + stepNum);
+            const isShowing = content.classList.contains('show');
+            
+            document.querySelectorAll('.info-content').forEach(el => el.classList.remove('show'));
+            document.querySelectorAll('.info-btn').forEach(el => {
+                el.classList.remove('active');
+                el.querySelector('span').innerText = '+';
+            });
+
+            if (!isShowing) {
+                content.classList.add('show');
+                btn.classList.add('active');
+                btn.querySelector('span').innerText = '-';
+            }
+
+            document.querySelectorAll('.cpu-area').forEach(el => el.classList.remove('highlight'));
+            
+            const targetBox = document.getElementById('step-box-' + stepNum);
+            if (targetBox) {
+                targetBox.classList.add('highlight');
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            if (tabId === 'tab1') {
+                document.getElementById('btn-tab1').classList.add('active');
+            } else {
+                document.getElementById('btn-tab2').classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
